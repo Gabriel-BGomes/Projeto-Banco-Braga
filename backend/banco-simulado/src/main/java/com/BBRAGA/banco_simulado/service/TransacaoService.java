@@ -64,29 +64,15 @@ public class TransacaoService {
         BigDecimal valor = dto.getValor();
         validarValor(valor);
 
-        Conta origem = contaRepository.findByNumero(dto.getContaOrigem())
-                .orElseThrow(() -> new IllegalArgumentException("Conta origem não encontrada"));
         Conta destino = contaRepository.findByNumero(dto.getContaDestino())
-                .orElseThrow(() -> new IllegalArgumentException("Conta destino não encontrada"));
-
-        validarContaAtiva(origem);
+            .orElseThrow(() -> new IllegalArgumentException("Conta destino não encontrada"));
         validarContaAtiva(destino);
 
-        if (origem.getNumero().equals(destino.getNumero())) {
-            throw new IllegalArgumentException("Conta origem e destino não podem ser iguais");
-        }
-        if (origem.getSaldo().compareTo(valor) < 0) {
-            throw new IllegalArgumentException("Saldo insuficiente na conta origem");
-        }
-
-        // débito na origem, crédito na destino
-        origem.setSaldo(origem.getSaldo().subtract(valor));
         destino.setSaldo(destino.getSaldo().add(valor));
-        contaRepository.save(origem);
         contaRepository.save(destino);
 
         Transacao tx = new Transacao();
-        tx.setContaOrigem(origem);
+        tx.setContaOrigem(null);
         tx.setContaDestino(destino);
         tx.setTipo(TipoTransacao.DEPOSITO);
         tx.setValor(valor);
